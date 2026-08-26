@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New features
 
 - **Copy the current preview source path** — New commands copy the source currently rendered by the active MPE preview as either a workspace-relative path or a full path/URI, including after following links inside the preview.
+- **Open the current preview source in the editor** — A new command opens the source currently rendered by the active MPE preview in the VS Code text editor, including after following links inside the preview.
 
 ## [0.8.33] - 2026-09-02
 

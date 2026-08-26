@@ -90,6 +90,10 @@
         "title": "%markdown-preview-enhanced.copyCurrentSourcePath.title%"
       },
       {
+        "command": "markdown-preview-enhanced.openCurrentSourceInEditor",
+        "title": "%markdown-preview-enhanced.openCurrentSourceInEditor.title%"
+      },
+      {
         "command": "markdown-preview-enhanced.toggleScrollSync",
         "title": "%markdown-preview-enhanced.toggleScrollSync.title%"
       },

@@ -280,6 +280,18 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`Copied source path: ${sourcePath}`);
   }
 
+  async function openCurrentSourceInEditor() {
+    const sourceUri = getActivePreviewSourceUri();
+    if (!sourceUri) {
+      vscode.window.showWarningMessage(
+        'Unable to determine the current Markdown preview source.',
+      );
+      return;
+    }
+
+    await openSourceInEditor(sourceUri);
+  }
+
   function generateUniqueBlockId(text: string): string {
     const existing = new Set<string>();
     const re = /\s\^([a-zA-Z0-9_-]+)/g;
@@ -1005,13 +1017,16 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url));
   }
 
-  async function openExternalEditor(uri: string) {
-    const sourceUri = vscode.Uri.parse(uri);
+  async function openSourceInEditor(sourceUri: vscode.Uri) {
     const document = await vscode.workspace.openTextDocument(sourceUri);
     await vscode.window.showTextDocument(document, {
       preview: false,
       viewColumn: vscode.ViewColumn.Active,
     });
+  }
+
+  async function openExternalEditor(uri: string) {
+    await openSourceInEditor(vscode.Uri.parse(uri));
   }
 
   async function showBacklinks({
@@ -1379,6 +1394,10 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'markdown-preview-enhanced.copyCurrentSourcePath',
       copyCurrentSourcePath,
+    ),
+    vscode.commands.registerCommand(
+      'markdown-preview-enhanced.openCurrentSourceInEditor',
+      openCurrentSourceInEditor,
     ),
   );
 
