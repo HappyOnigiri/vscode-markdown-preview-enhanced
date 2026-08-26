@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### New features
+
+- **Copy the current preview source path** — New commands copy the source currently rendered by the active MPE preview as either a workspace-relative path or a full path/URI, including after following links inside the preview.
+
 ## [0.8.33] - 2026-09-02
 
 ### Features

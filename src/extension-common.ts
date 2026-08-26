@@ -10,12 +10,17 @@ import {
   openWikilinkTarget,
 } from './wikilink-document-link-provider';
 import { PreviewColorScheme, getMPEConfig, updateMPEConfig } from './config';
+import { formatPreviewSourcePath } from './current-preview-source';
 import { customEditorProviderOptions } from './custom-editor-options';
 import { findFragmentTargetLine } from './find-fragment-target-line';
 import { pasteImageFile, uploadImageFile } from './image-helper';
 import NotebooksManager from './notebooks-manager';
 import { PreviewCustomEditorProvider } from './preview-custom-editor-provider';
-import { PreviewProvider, getPreviewUri } from './preview-provider';
+import {
+  PreviewProvider,
+  getActivePreviewSourceUri,
+  getPreviewUri,
+} from './preview-provider';
 import { GraphViewProvider } from './graph-view-provider';
 import {
   createMissingMarkdownNote,
@@ -228,6 +233,38 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     const ref = `[[${noteName}#^${blockId}]]`;
     await vscode.env.clipboard.writeText(ref);
     vscode.window.showInformationMessage(`Copied block reference: ${ref}`);
+  }
+
+  async function copyCurrentSourceRelativePath() {
+    const sourceUri = getActivePreviewSourceUri();
+    if (!sourceUri) {
+      vscode.window.showWarningMessage(
+        'Unable to determine the current Markdown preview source.',
+      );
+      return;
+    }
+    if (!vscode.workspace.getWorkspaceFolder(sourceUri)) {
+      vscode.window.showWarningMessage(
+        'Unable to determine a workspace-relative path for the current Markdown preview source.',
+      );
+      return;
+    }
+
+    await vscode.env.clipboard.writeText(
+      vscode.workspace.asRelativePath(sourceUri, false),
+    );
+  }
+
+  async function copyCurrentSourcePath() {
+    const sourceUri = getActivePreviewSourceUri();
+    if (!sourceUri) {
+      vscode.window.showWarningMessage(
+        'Unable to determine the current Markdown preview source.',
+      );
+      return;
+    }
+
+    await vscode.env.clipboard.writeText(formatPreviewSourcePath(sourceUri));
   }
 
   function generateUniqueBlockId(text: string): string {
@@ -1318,6 +1355,17 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'markdown-preview-enhanced.togglePreviewLock',
       togglePreviewLock,
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'markdown-preview-enhanced.copyCurrentSourceRelativePath',
+      copyCurrentSourceRelativePath,
+    ),
+    vscode.commands.registerCommand(
+      'markdown-preview-enhanced.copyCurrentSourcePath',
+      copyCurrentSourcePath,
     ),
   );
 
