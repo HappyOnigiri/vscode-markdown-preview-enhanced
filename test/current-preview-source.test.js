@@ -143,6 +143,22 @@ suite('current-preview-source', function () {
     );
   });
 
+  test('recognizes a preview opened as a webview panel', function () {
+    assert.strictEqual(
+      isMpePreviewTabInput({
+        viewType: 'mainThreadWebview-markdown-preview-enhanced',
+      }),
+      true,
+    );
+  });
+
+  test('rejects another webview panel tab type', function () {
+    assert.strictEqual(
+      isMpePreviewTabInput({ viewType: 'mainThreadWebview-markdown.preview' }),
+      false,
+    );
+  });
+
   test('rejects another webview tab type', function () {
     assert.strictEqual(
       isMpePreviewTabInput({ viewType: 'markdown.preview' }),
