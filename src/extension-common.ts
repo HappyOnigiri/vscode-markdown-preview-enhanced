@@ -10,7 +10,10 @@ import {
   openWikilinkTarget,
 } from './wikilink-document-link-provider';
 import { PreviewColorScheme, getMPEConfig, updateMPEConfig } from './config';
-import { formatPreviewSourcePath } from './current-preview-source';
+import {
+  formatPreviewSourcePath,
+  isMpePreviewTabInput,
+} from './current-preview-source';
 import { customEditorProviderOptions } from './custom-editor-options';
 import { findFragmentTargetLine } from './find-fragment-target-line';
 import { pasteImageFile, uploadImageFile } from './image-helper';
@@ -280,7 +283,7 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`Copied source path: ${sourcePath}`);
   }
 
-  async function openCurrentSourceInEditor() {
+  async function openCurrentPreviewSourceInEditor(closePreview: boolean) {
     const sourceUri = getActivePreviewSourceUri();
     if (!sourceUri) {
       vscode.window.showWarningMessage(
@@ -289,7 +292,36 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
       return;
     }
 
-    await openSourceInEditor(sourceUri);
+    let previewTab: vscode.Tab | undefined;
+    if (closePreview) {
+      const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+      if (!activeTab || !isMpePreviewTabInput(activeTab.input)) {
+        vscode.window.showWarningMessage(
+          'Unable to determine the current Markdown preview tab.',
+        );
+        return;
+      }
+      previewTab = activeTab;
+    }
+
+    await openSourceInEditor(sourceUri, previewTab?.group.viewColumn);
+
+    if (previewTab) {
+      const closed = await vscode.window.tabGroups.close(previewTab, true);
+      if (!closed) {
+        vscode.window.showWarningMessage(
+          'Unable to close the current Markdown preview.',
+        );
+      }
+    }
+  }
+
+  async function openCurrentSourceInEditor() {
+    await openCurrentPreviewSourceInEditor(false);
+  }
+
+  async function openCurrentSourceInEditorAndClosePreview() {
+    await openCurrentPreviewSourceInEditor(true);
   }
 
   function generateUniqueBlockId(text: string): string {
@@ -1017,11 +1049,14 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url));
   }
 
-  async function openSourceInEditor(sourceUri: vscode.Uri) {
+  async function openSourceInEditor(
+    sourceUri: vscode.Uri,
+    viewColumn: vscode.ViewColumn = vscode.ViewColumn.Active,
+  ) {
     const document = await vscode.workspace.openTextDocument(sourceUri);
     await vscode.window.showTextDocument(document, {
       preview: false,
-      viewColumn: vscode.ViewColumn.Active,
+      viewColumn,
     });
   }
 
@@ -1398,6 +1433,10 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'markdown-preview-enhanced.openCurrentSourceInEditor',
       openCurrentSourceInEditor,
+    ),
+    vscode.commands.registerCommand(
+      'markdown-preview-enhanced.openCurrentSourceInEditorAndClosePreview',
+      openCurrentSourceInEditorAndClosePreview,
     ),
   );
 

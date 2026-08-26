@@ -10,6 +10,10 @@ export interface SourceUriLike {
   toString(): string;
 }
 
+export interface PreviewTabInputLike {
+  readonly viewType: unknown;
+}
+
 /**
  * Return the source for the only focused preview.
  *
@@ -48,4 +52,16 @@ export function formatPreviewSourcePath(sourceUri: SourceUriLike): string {
     return sourceUri.fsPath;
   }
   return sourceUri.with({ query: '', fragment: '' }).toString();
+}
+
+/** Return whether a tab input belongs to an MPE custom editor or webview. */
+export function isMpePreviewTabInput(
+  input: unknown,
+): input is PreviewTabInputLike {
+  return (
+    typeof input === 'object' &&
+    input !== null &&
+    'viewType' in input &&
+    input.viewType === 'markdown-preview-enhanced'
+  );
 }
