@@ -239,13 +239,13 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     const sourceUri = getActivePreviewSourceUri();
     if (!sourceUri) {
       vscode.window.showWarningMessage(
-        'Unable to determine the current Markdown preview source.',
+        'Focus the Markdown Preview Enhanced preview whose source you want to copy, then run this command again.',
       );
       return;
     }
     if (!vscode.workspace.getWorkspaceFolder(sourceUri)) {
       vscode.window.showWarningMessage(
-        'Unable to determine a workspace-relative path for the current Markdown preview source.',
+        'The source of the focused Markdown preview is outside the workspace, so it has no workspace-relative path.',
       );
       return;
     }
@@ -261,7 +261,7 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     const sourceUri = getActivePreviewSourceUri();
     if (!sourceUri) {
       vscode.window.showWarningMessage(
-        'Unable to determine the current Markdown preview source.',
+        'Focus the Markdown Preview Enhanced preview whose source you want to copy, then run this command again.',
       );
       return;
     }
