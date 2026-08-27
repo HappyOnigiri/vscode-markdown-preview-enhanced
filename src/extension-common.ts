@@ -235,12 +235,24 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`Copied block reference: ${ref}`);
   }
 
-  async function copyCurrentSourceRelativePath() {
+  /**
+   * Resolve the source of the focused preview, warning the user when it cannot
+   * be determined.
+   */
+  function resolveCurrentPreviewSourceOrWarn(): vscode.Uri | undefined {
     const sourceUri = getActivePreviewSourceUri();
     if (!sourceUri) {
       vscode.window.showWarningMessage(
         'Focus the Markdown Preview Enhanced preview whose source you want to copy, then run this command again.',
       );
+      return undefined;
+    }
+    return sourceUri;
+  }
+
+  async function copyCurrentSourceRelativePath() {
+    const sourceUri = resolveCurrentPreviewSourceOrWarn();
+    if (!sourceUri) {
       return;
     }
     if (!vscode.workspace.getWorkspaceFolder(sourceUri)) {
@@ -258,11 +270,8 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
   }
 
   async function copyCurrentSourcePath() {
-    const sourceUri = getActivePreviewSourceUri();
+    const sourceUri = resolveCurrentPreviewSourceOrWarn();
     if (!sourceUri) {
-      vscode.window.showWarningMessage(
-        'Focus the Markdown Preview Enhanced preview whose source you want to copy, then run this command again.',
-      );
       return;
     }
 
