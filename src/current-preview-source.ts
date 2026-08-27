@@ -6,6 +6,7 @@ export interface PreviewSourceState<TSource> {
 export interface SourceUriLike {
   readonly scheme: string;
   readonly fsPath: string;
+  with(change: { query?: string; fragment?: string }): SourceUriLike;
   toString(): string;
 }
 
@@ -37,7 +38,14 @@ export function resolveActivePreviewSource<TSource>(
 /**
  * Format a source URI without treating remote or virtual resources as local
  * filesystem paths.
+ *
+ * The query and fragment are dropped so that a link followed inside the
+ * preview yields the source resource itself, matching what `fsPath` returns
+ * for `file:` URIs.
  */
 export function formatPreviewSourcePath(sourceUri: SourceUriLike): string {
-  return sourceUri.scheme === 'file' ? sourceUri.fsPath : sourceUri.toString();
+  if (sourceUri.scheme === 'file') {
+    return sourceUri.fsPath;
+  }
+  return sourceUri.with({ query: '', fragment: '' }).toString();
 }

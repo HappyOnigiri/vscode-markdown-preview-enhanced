@@ -101,16 +101,56 @@ suite('current-preview-source', function () {
   });
 
   test('preserves scheme and authority for non-file URIs', function () {
-    const remoteUri =
-      'vscode-remote://ssh-remote+example/workspace/docs/design.md';
-
     assert.strictEqual(
-      formatPreviewSourcePath({
-        scheme: 'vscode-remote',
-        fsPath: '/workspace/docs/design.md',
-        toString: () => remoteUri,
-      }),
-      remoteUri,
+      formatPreviewSourcePath(remoteUri()),
+      'vscode-remote://ssh-remote+example/workspace/docs/design.md',
+    );
+  });
+
+  test('drops the fragment and query of non-file URIs', function () {
+    assert.strictEqual(
+      formatPreviewSourcePath(remoteUri({ query: 'v=2', fragment: 'section' })),
+      'vscode-remote://ssh-remote+example/workspace/docs/design.md',
+    );
+  });
+
+  test('resolves file and non-file URIs to the same resource when a fragment is present', function () {
+    const withoutFragment = formatPreviewSourcePath(remoteUri());
+    const withFragment = formatPreviewSourcePath(
+      remoteUri({ fragment: 'section' }),
+    );
+    const fileUri = (fragment) => ({
+      scheme: 'file',
+      fsPath: '/workspace/docs/design.md',
+      with: () => fileUri(''),
+      toString: () =>
+        `file:///workspace/docs/design.md${fragment ? `#${fragment}` : ''}`,
+    });
+
+    assert.strictEqual(withFragment, withoutFragment);
+    assert.strictEqual(
+      formatPreviewSourcePath(fileUri('section')),
+      formatPreviewSourcePath(fileUri('')),
     );
   });
 });
+
+function remoteUri({ query = '', fragment = '' } = {}) {
+  return {
+    scheme: 'vscode-remote',
+    fsPath: '/workspace/docs/design.md',
+    with(change) {
+      return remoteUri({
+        query: change.query === undefined ? query : change.query,
+        fragment: change.fragment === undefined ? fragment : change.fragment,
+      });
+    },
+    toString() {
+      return (
+        'vscode-remote://ssh-remote+example/workspace/docs/design.md' +
+        (query ? `?${query}` : '') +
+        (fragment ? `#${fragment}` : '')
+      );
+    },
+  };
+}
