@@ -250,8 +250,10 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
       return;
     }
 
-    await vscode.env.clipboard.writeText(
-      vscode.workspace.asRelativePath(sourceUri, false),
+    const relativePath = vscode.workspace.asRelativePath(sourceUri, false);
+    await vscode.env.clipboard.writeText(relativePath);
+    vscode.window.showInformationMessage(
+      `Copied relative source path: ${relativePath}`,
     );
   }
 
@@ -264,7 +266,9 @@ export async function initExtensionCommon(context: vscode.ExtensionContext) {
       return;
     }
 
-    await vscode.env.clipboard.writeText(formatPreviewSourcePath(sourceUri));
+    const sourcePath = formatPreviewSourcePath(sourceUri);
+    await vscode.env.clipboard.writeText(sourcePath);
+    vscode.window.showInformationMessage(`Copied source path: ${sourcePath}`);
   }
 
   function generateUniqueBlockId(text: string): string {
